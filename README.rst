@@ -30,7 +30,6 @@ This driver depends on:
 
 * `Adafruit CircuitPython <https://github.com/adafruit/circuitpython>`_
 * `Bus Device <https://github.com/adafruit/Adafruit_CircuitPython_BusDevice>`_
-* `Register <https://github.com/adafruit/Adafruit_CircuitPython_Register>`_
 
 Please ensure all dependencies are available on the CircuitPython filesystem.
 This is easily achieved by downloading
@@ -105,7 +104,7 @@ Usage Example
         print("DS248x OK!")
     except RuntimeError:
         print("DS248x initialization failed.")
-    
+
     rom = bytearray(8)
     if not ds248x.OneWireSearch(rom):
         print("No more devices found\n\n")
