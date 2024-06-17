@@ -99,11 +99,6 @@ Usage Example
     # Initialize I2C bus and DS248x
     i2c = board.STEMMA_I2C()
     ds248x = Adafruit_DS248x(i2c)
-    try:
-        ds248x.reset()
-        print("DS248x OK!")
-    except RuntimeError:
-        print("DS248x initialization failed.")
 
     rom = bytearray(8)
     if not ds248x.OneWireSearch(rom):
