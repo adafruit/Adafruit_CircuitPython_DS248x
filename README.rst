@@ -101,7 +101,7 @@ Usage Example
     ds248x = Adafruit_DS248x(i2c)
 
     rom = bytearray(8)
-    if not ds248x.OneWireSearch(rom):
+    if not ds248x.onewire_search(rom):
         print("No more devices found\n\n")
         raise
 
