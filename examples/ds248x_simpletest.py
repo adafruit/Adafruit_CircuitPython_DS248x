@@ -9,7 +9,7 @@ import board
 from adafruit_ds248x import Adafruit_DS248x
 
 # Initialize I2C bus and DS248x
-i2c = board.STEMMA_I2C()
+i2c = board.I2C()
 ds248x = Adafruit_DS248x(i2c)
 
 rom = bytearray(8)
