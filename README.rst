@@ -3,7 +3,7 @@ Introduction
 
 
 .. image:: https://readthedocs.org/projects/adafruit-circuitpython-ds248x/badge/?version=latest
-    :target: https://docs.circuitpython.org/projects/ds248x/en/latest/
+    :target: https://adafruit-circuitpython-ds248x.readthedocs.io/en/latest/
     :alt: Documentation Status
 
 

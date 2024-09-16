@@ -15,6 +15,7 @@ Implementation Notes
 **Hardware:**
 
 * `Adafruit DS2484 I2C to 1-Wire Bus Adapter Breakout <https://www.adafruit.com/product/5976>`_
+* `Adafruit DS2482S-800 8 Channel I2C to 1-Wire Breakout <https://www.adafruit.com/product/6027>`_
 
 **Software and Dependencies:**
 
@@ -46,6 +47,7 @@ _1WIRE_SINGLE_BIT = const(0x87)
 _1WIRE_WRITE_BYTE = const(0xA5)
 _1WIRE_READ_BYTE = const(0x96)
 _TRIPLET = const(0x78)
+_CHANNEL_SELECT = const(0xC3)
 
 # DS248x Register Definitions
 _REG_STATUS = const(0xF0)
@@ -61,7 +63,7 @@ _DS18B20_SCRATCHPAD = const(0xBE)
 
 class Adafruit_DS248x:
     """
-    Driver for the DS2484 1-Wire to I2C Bus Adapter.
+    Driver for the DS248x 1-Wire to I2C Bus Adapter.
     """
 
     def __init__(self, i2c: I2C, address: int = 0x18):
@@ -74,6 +76,7 @@ class Adafruit_DS248x:
         try:
             self.i2c_device = I2CDevice(i2c, address)
             self._address = address
+            self._selected_channel = -1
             self.rom_no: bytearray = bytearray(8)
             self.last_discrepancy: int = 0
             self.last_device_flag: bool = False
@@ -87,7 +90,9 @@ class Adafruit_DS248x:
                     raise RuntimeError("\tNo presence pulse")
                 time.sleep(1)
         except RuntimeError as exception:
-            raise RuntimeError("DS248x initialization failed.") from exception
+            raise RuntimeError(
+                f"DS248x initialization failed: {exception}"
+            ) from exception
 
     def reset(self) -> bool:
         """
@@ -374,37 +379,82 @@ class Adafruit_DS248x:
         status = self.status
         return status != 0xFF and (status & 0x80)
 
-    def ds18b20_temperature(self, rom: bytearray) -> float:
+    def ds18b20_temperature(self, rom: bytearray = None) -> float:
         """
-        Reads the temperature from a DS18B20 sensor.
+        Reads the temperature from a DS18B20 sensor. If no ROM address is provided,
+        then a channel is read (0-7) from the DS2482S-800.
 
-        :param rom: The ROM address of the DS18B20 sensor
+        :param rom: The ROM address of the DS18B20 sensor (optional)
         :return: The temperature in Celsius
         """
-        if rom[0] != _DS18B20_FAMILY:
-            raise ValueError("Device attached is not a DS18B20")
-
-        self.onewire_reset()
-        self.onewire_byte = 0x55  # Match ROM command
-        for byte in rom:
-            self.onewire_byte = byte
-
-        self.onewire_byte = 0x44  # Convert T command
+        if rom:
+            if rom[0] != _DS18B20_FAMILY:
+                raise ValueError("Device attached is not a DS18B20")
+            # Match ROM if a ROM address is provided
+            self.onewire_reset()
+            self.onewire_byte = 0x55
+            for byte in rom:
+                self.onewire_byte = byte
+        else:
+            # Skip ROM if no ROM address is provided
+            self.onewire_reset()
+            self.onewire_byte = 0xCC
+        self.onewire_byte = 0x44
         time.sleep(0.75)
-
-        self.onewire_reset()
-        self.onewire_byte = 0x55
-        for byte in rom:
-            self.onewire_byte = byte
-        self.onewire_byte = 0xBE  # Read Scratchpad command
-
+        if rom:
+            self.onewire_reset()
+            self.onewire_byte = 0x55
+            for byte in rom:
+                self.onewire_byte = byte
+        else:
+            self.onewire_reset()
+            self.onewire_byte = 0xCC
+        self.onewire_byte = 0xBE
         data = bytearray(9)
         for i in range(9):
             data[i] = self.onewire_byte
-
         raw = (data[1] << 8) | data[0]
         if raw & 0x8000:
             raw -= 1 << 16
         celsius = raw / 16.0
-
         return celsius
+
+    @property
+    def channel(self) -> int:
+        """
+        Gets the current selected channel on the DS2482-800 by querying the device.
+
+        :return: The currenctly selected channel.
+        """
+        if self._selected_channel is None:
+            raise ValueError("No channel has been selected yet")
+        channel_code = self._selected_channel + (~self._selected_channel << 4) & 0xFF
+        cmd = bytearray([_CHANNEL_SELECT, channel_code])
+        reply = bytearray(1)
+        with self.i2c_device as i2c:
+            i2c.write(cmd)
+            i2c.readinto(reply)
+        return_codes = [0xB8, 0xB1, 0xAA, 0xA3, 0x9C, 0x95, 0x8E, 0x87]
+        if reply[0] in return_codes:
+            return return_codes.index(reply[0])
+        raise ValueError("Unknown channel code returned from the device")
+
+    @channel.setter
+    def channel(self, chan: int) -> None:
+        """
+        Sets the channel on the DS2482-800.
+
+        :param chan: Channel to use, from 0 to 7 inclusive
+        """
+        if chan > 7:
+            raise ValueError("Channel must be between 0 and 7")
+        channel_code = chan + (~chan << 4) & 0xFF
+        cmd = bytearray([_CHANNEL_SELECT, channel_code])
+        reply = bytearray(1)
+        with self.i2c_device as i2c:
+            i2c.write(cmd)
+            i2c.readinto(reply)
+        return_codes = [0xB8, 0xB1, 0xAA, 0xA3, 0x9C, 0x95, 0x8E, 0x87]
+        if return_codes[chan] != reply[0]:
+            raise RuntimeError("Failed to set the channel")
+        self._selected_channel = chan
