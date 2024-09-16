@@ -8,7 +8,7 @@ Ensure your device works with this simple test.
     :linenos:
 
 DS2482S-800 8-Channel example
-------------
+-----------------------------
 
 Read all 8 channels from the DS2482S-800
 
