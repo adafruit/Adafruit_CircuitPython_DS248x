@@ -7,7 +7,6 @@
 
 CircuitPython driver for the DS2484 I2C to 1-Wire Bus Adapter
 
-
 * Author(s): Liz Clark
 
 Implementation Notes
@@ -16,6 +15,7 @@ Implementation Notes
 **Hardware:**
 
 * `Adafruit DS2484 I2C to 1-Wire Bus Adapter Breakout <https://www.adafruit.com/product/5976>`_
+* `Adafruit DS2482S-800 8 Channel I2C to 1-Wire Breakout <https://www.adafruit.com/product/6027>`_
 
 **Software and Dependencies:**
 
@@ -23,10 +23,17 @@ Implementation Notes
   https://circuitpython.org/downloads
 
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
-* Adafruit's Register library: https://github.com/adafruit/Adafruit_CircuitPython_Register
 """
 
-# imports
+import time
+from micropython import const
+from adafruit_bus_device.i2c_device import I2CDevice
+
+try:
+    from typing import List  # pylint: disable=unused-import
+    from busio import I2C
+except ImportError:
+    pass
 
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DS248x.git"

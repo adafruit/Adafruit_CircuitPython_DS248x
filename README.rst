@@ -3,7 +3,7 @@ Introduction
 
 
 .. image:: https://readthedocs.org/projects/adafruit-circuitpython-ds248x/badge/?version=latest
-    :target: https://docs.circuitpython.org/projects/ds248x/en/latest/
+    :target: https://adafruit-circuitpython-ds248x.readthedocs.io/en/latest/
     :alt: Documentation Status
 
 
@@ -105,7 +105,7 @@ Usage Example
         print("DS248x OK!")
     except RuntimeError:
         print("DS248x initialization failed.")
-    
+
     rom = bytearray(8)
     if not ds248x.OneWireSearch(rom):
         print("No more devices found\n\n")
