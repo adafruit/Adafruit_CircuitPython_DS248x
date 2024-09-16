@@ -112,7 +112,7 @@ Usage Example
 
 Documentation
 =============
-API documentation for this library can be found on `Read the Docs <https://docs.circuitpython.org/projects/ds248x/en/latest/>`_.
+API documentation for this library can be found on `Read the Docs <https://adafruit-circuitpython-ds248x.readthedocs.io/en/latest/>`_.
 
 For information on building library documentation, please check out
 `this guide <https://learn.adafruit.com/creating-and-sharing-a-circuitpython-library/sharing-our-docs-on-readthedocs#sphinx-5-1>`_.
