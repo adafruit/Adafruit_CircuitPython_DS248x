@@ -5,7 +5,9 @@
 """Adafruit DS248x DS18B20 Example"""
 
 import time
+
 import board
+
 from adafruit_ds248x import Adafruit_DS248x
 
 # Initialize I2C bus and DS248x
