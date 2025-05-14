@@ -26,11 +26,13 @@ Implementation Notes
 """
 
 import time
-from micropython import const
+
 from adafruit_bus_device.i2c_device import I2CDevice
+from micropython import const
 
 try:
-    from typing import List  # pylint: disable=unused-import
+    from typing import List
+
     from busio import I2C
 except ImportError:
     pass
@@ -90,9 +92,7 @@ class Adafruit_DS248x:
                     raise RuntimeError("\tNo presence pulse")
                 time.sleep(1)
         except RuntimeError as exception:
-            raise RuntimeError(
-                f"DS248x initialization failed: {exception}"
-            ) from exception
+            raise RuntimeError(f"DS248x initialization failed: {exception}") from exception
 
     def reset(self) -> bool:
         """
@@ -117,11 +117,7 @@ class Adafruit_DS248x:
         with self.i2c_device as i2c:
             i2c.write(cmd)
         status = self.status
-        return (
-            (status != 0xFF)
-            and not self.short_detected
-            and self.presence_pulse_detected
-        )
+        return (status != 0xFF) and not self.short_detected and self.presence_pulse_detected
 
     @property
     def onewire_byte(self) -> int:
@@ -176,7 +172,6 @@ class Adafruit_DS248x:
         self.last_device_flag = False
         self.last_family_discrepancy = 0
 
-    # pylint: disable=too-many-branches
     def onewire_search(self, new_addr: List[int]) -> bool:
         """
         Perform a 1-Wire search to find devices on the bus.
@@ -211,9 +206,7 @@ class Adafruit_DS248x:
                     search_direction = id_bit
                 else:
                     if id_bit_number < self.last_discrepancy:
-                        search_direction = (
-                            self.rom_no[rom_byte_number] & rom_byte_mask
-                        ) > 0
+                        search_direction = (self.rom_no[rom_byte_number] & rom_byte_mask) > 0
                     else:
                         search_direction = id_bit_number == self.last_discrepancy
                     if not search_direction:
